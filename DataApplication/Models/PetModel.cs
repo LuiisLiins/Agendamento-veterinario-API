@@ -1,0 +1,70 @@
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace DataApplication.Models
+{
+    public class PetModel
+    {
+        [Key]
+        public int Id { get; set; }
+        public int ClienteId { get; set; }
+        public string Nome { get; set; } = null!;
+        public string Especie { get; set; } = null!;
+        public string Raca { get; set; } = null!;
+        public decimal Peso { get; set; }
+        public DateTime DataNascimento { get; set; }
+        public string Cor { get; set; } = null!;
+        public string Sexo { get; set; } = null!;
+        public string NumeroMicrochip { get; set; } = null!;
+        public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+        public DateTime? DataAtualizacao { get; set; }
+        public bool Ativo { get; set; } = true;
+
+        public PetModel() { }
+
+        public PetModel(int clienteId, string nome, string especie, string raca, decimal peso, DateTime dataNascimento, string cor, string sexo, string numeroMicrochip)
+        {
+            if (string.IsNullOrWhiteSpace(nome)) throw new ArgumentException("O nome do pet é obrigatório.");
+            if (dataNascimento > DateTime.UtcNow) throw new ArgumentException("A data de nascimento não pode ser no futuro.");
+
+            ClienteId = clienteId;
+            Nome = nome;
+            Especie = especie;
+            Raca = raca;
+            Peso = peso;
+            DataNascimento = dataNascimento;
+            Cor = cor;
+            Sexo = sexo;
+            NumeroMicrochip = numeroMicrochip;
+            DataCriacao = DateTime.UtcNow;
+            Ativo = true;
+        }
+
+        public int GetIdadeEmAnos()
+        {
+            var hoje = DateTime.UtcNow;
+            var idade = hoje.Year - DataNascimento.Year;
+
+            if (DataNascimento.Date > hoje.AddYears(-idade))
+                idade--;
+
+            return idade;
+        }
+
+        public bool ValidarSePodeSerExcluido(bool possuiAgendamentosAtivosNoFuturo)
+        {
+            if (possuiAgendamentosAtivosNoFuturo)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public void Desativar()
+        {
+            Ativo = false;
+            DataAtualizacao = DateTime.UtcNow;
+        }
+    }
+}
