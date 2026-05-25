@@ -14,19 +14,16 @@ namespace AgendamentoVeterinario.Consultas.API.Domain.Entities
         public string Descricao { get; private set; } = null!;
         public decimal Valor { get; private set; }
         public string Observacoes { get; private set; } = null!;
-        public DateTime DataCriacao { get; private set; } = DateTime.UtcNow;
+        public DateTime DataCriacao { get; private set; }
         public DateTime? DataAtualizacao { get; private set; }
-        public bool Ativo { get; private set; } = true;
-        public string StatusAgendamento { get; private set; } = "Agendado";
+        public bool Ativo { get; private set; }
+        public string StatusAgendamento { get; private set; } = null!;
 
-        public virtual Veterinario Veterinario { get; private set; } = null!;
-
-        // 🛠️ MUDANÇA AQUI: Alterado de protected para public para o System.Text.Json usar como fallback
         public Agendamento() { }
 
         public Agendamento(int clienteId, int petId, int veterinarioId, DateTime dataHora, string tipoServico, decimal valor, string descricao, string observacoes)
         {
-            if (dataHora < DateTime.UtcNow) throw new ArgumentException("A data da consulta nao pode ser retroativa.");
+            if (dataHora < DateTime.UtcNow) throw new ArgumentException("A data da consulta não pode ser retroativa.");
             if (valor <= 0) throw new ArgumentException("O valor da consulta precisa ser maior que zero.");
 
             ClienteId = clienteId;

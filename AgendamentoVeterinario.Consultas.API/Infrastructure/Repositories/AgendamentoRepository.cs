@@ -21,19 +21,23 @@ namespace AgendamentoVeterinario.Consultas.API.Infrastructure.Repositories
 
         public async Task<Agendamento> AddAsync(Agendamento agendamento)
         {
-            var model = new AgendamentoModel(
-                agendamento.ClienteId,
-                agendamento.PetId,
-                agendamento.VeterinarioId,
-                agendamento.DataHoraAgendamento,
-                agendamento.TipoServico,
-                agendamento.Valor,
-                agendamento.Descricao,
-                agendamento.Observacoes
-            );
+            var model = new AgendamentoModel
+            {
+                ClienteId = agendamento.ClienteId,
+                PetId = agendamento.PetId,
+                VeterinarioId = agendamento.VeterinarioId,
+                DataHoraAgendamento = agendamento.DataHoraAgendamento,
+                DataHoraFim = agendamento.DataHoraFim,
+                TipoServico = agendamento.TipoServico,
+                Valor = agendamento.Valor,
+                Descricao = agendamento.Descricao,
+                Observacoes = agendamento.Observacoes,
+                DataCriacao = agendamento.DataCriacao,
+                Ativo = agendamento.Ativo,
+                StatusAgendamento = agendamento.StatusAgendamento
+            };
 
             await _context.Agendamentos.AddAsync(model);
-            await _context.SaveChangesAsync();
 
             typeof(Agendamento).GetProperty("Id")?.SetValue(agendamento, model.Id);
             return agendamento;
@@ -46,7 +50,6 @@ namespace AgendamentoVeterinario.Consultas.API.Infrastructure.Repositories
                 return false;
 
             _context.Agendamentos.Remove(model);
-            await _context.SaveChangesAsync();
             return true;
         }
 
@@ -57,11 +60,7 @@ namespace AgendamentoVeterinario.Consultas.API.Infrastructure.Repositories
 
             foreach (var m in models)
             {
-                var agendamento = new Agendamento(m.ClienteId, m.PetId, m.VeterinarioId, m.DataHoraAgendamento, m.TipoServico, m.Valor, m.Descricao, m.Observacoes);
-                typeof(Agendamento).GetProperty("Id")?.SetValue(agendamento, m.Id);
-                typeof(Agendamento).GetProperty("StatusAgendamento")?.SetValue(agendamento, m.StatusAgendamento);
-                typeof(Agendamento).GetProperty("Ativo")?.SetValue(agendamento, m.Ativo);
-                list.Add(agendamento);
+                list.Add(MapToEntity(m));
             }
 
             return list;
@@ -74,11 +73,7 @@ namespace AgendamentoVeterinario.Consultas.API.Infrastructure.Repositories
 
             foreach (var m in models)
             {
-                var agendamento = new Agendamento(m.ClienteId, m.PetId, m.VeterinarioId, m.DataHoraAgendamento, m.TipoServico, m.Valor, m.Descricao, m.Observacoes);
-                typeof(Agendamento).GetProperty("Id")?.SetValue(agendamento, m.Id);
-                typeof(Agendamento).GetProperty("StatusAgendamento")?.SetValue(agendamento, m.StatusAgendamento);
-                typeof(Agendamento).GetProperty("Ativo")?.SetValue(agendamento, m.Ativo);
-                list.Add(agendamento);
+                list.Add(MapToEntity(m));
             }
 
             return list;
@@ -91,11 +86,7 @@ namespace AgendamentoVeterinario.Consultas.API.Infrastructure.Repositories
 
             foreach (var m in models)
             {
-                var agendamento = new Agendamento(m.ClienteId, m.PetId, m.VeterinarioId, m.DataHoraAgendamento, m.TipoServico, m.Valor, m.Descricao, m.Observacoes);
-                typeof(Agendamento).GetProperty("Id")?.SetValue(agendamento, m.Id);
-                typeof(Agendamento).GetProperty("StatusAgendamento")?.SetValue(agendamento, m.StatusAgendamento);
-                typeof(Agendamento).GetProperty("Ativo")?.SetValue(agendamento, m.Ativo);
-                list.Add(agendamento);
+                list.Add(MapToEntity(m));
             }
 
             return list;
@@ -107,12 +98,7 @@ namespace AgendamentoVeterinario.Consultas.API.Infrastructure.Repositories
             if (m is null)
                 return null;
 
-            var agendamento = new Agendamento(m.ClienteId, m.PetId, m.VeterinarioId, m.DataHoraAgendamento, m.TipoServico, m.Valor, m.Descricao, m.Observacoes);
-            typeof(Agendamento).GetProperty("Id")?.SetValue(agendamento, m.Id);
-            typeof(Agendamento).GetProperty("StatusAgendamento")?.SetValue(agendamento, m.StatusAgendamento);
-            typeof(Agendamento).GetProperty("Ativo")?.SetValue(agendamento, m.Ativo);
-
-            return agendamento;
+            return MapToEntity(m);
         }
 
         public async Task<Agendamento?> UpdateAsync(int id, Agendamento agendamento)
@@ -132,9 +118,28 @@ namespace AgendamentoVeterinario.Consultas.API.Infrastructure.Repositories
             existing.Observacoes = agendamento.Observacoes;
             existing.StatusAgendamento = agendamento.StatusAgendamento;
             existing.Ativo = agendamento.Ativo;
-            existing.DataAtualizacao = DateTime.UtcNow;
+            existing.DataAtualizacao = agendamento.DataAtualizacao;
 
-            await _context.SaveChangesAsync();
+            return agendamento;
+        }
+
+        private Agendamento MapToEntity(AgendamentoModel m)
+        {
+            var agendamento = (Agendamento)Activator.CreateInstance(typeof(Agendamento), true)!;
+            typeof(Agendamento).GetProperty("Id")?.SetValue(agendamento, m.Id);
+            typeof(Agendamento).GetProperty("ClienteId")?.SetValue(agendamento, m.ClienteId);
+            typeof(Agendamento).GetProperty("PetId")?.SetValue(agendamento, m.PetId);
+            typeof(Agendamento).GetProperty("VeterinarioId")?.SetValue(agendamento, m.VeterinarioId);
+            typeof(Agendamento).GetProperty("DataHoraAgendamento")?.SetValue(agendamento, m.DataHoraAgendamento);
+            typeof(Agendamento).GetProperty("DataHoraFim")?.SetValue(agendamento, m.DataHoraFim);
+            typeof(Agendamento).GetProperty("TipoServico")?.SetValue(agendamento, m.TipoServico);
+            typeof(Agendamento).GetProperty("Valor")?.SetValue(agendamento, m.Valor);
+            typeof(Agendamento).GetProperty("Descricao")?.SetValue(agendamento, m.Descricao);
+            typeof(Agendamento).GetProperty("Observacoes")?.SetValue(agendamento, m.Observacoes);
+            typeof(Agendamento).GetProperty("DataCriacao")?.SetValue(agendamento, m.DataCriacao);
+            typeof(Agendamento).GetProperty("DataAtualizacao")?.SetValue(agendamento, m.DataAtualizacao);
+            typeof(Agendamento).GetProperty("Ativo")?.SetValue(agendamento, m.Ativo);
+            typeof(Agendamento).GetProperty("StatusAgendamento")?.SetValue(agendamento, m.StatusAgendamento);
             return agendamento;
         }
     }

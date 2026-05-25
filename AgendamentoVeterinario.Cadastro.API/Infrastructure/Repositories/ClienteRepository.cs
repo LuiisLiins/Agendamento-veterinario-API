@@ -8,7 +8,6 @@ using AgendamentoVeterinario.Cadastro.API.Domain.Repositories;
 using DataApplication.Context;
 using DataApplication.Models;
 
-
 namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
 {
     public class ClienteRepository : IClienteRepository
@@ -30,11 +29,12 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
                 Endereco = cliente.Endereco,
                 Cidade = cliente.Cidade,
                 Estado = cliente.Estado,
-                CEP = cliente.CEP
+                CEP = cliente.CEP,
+                DataCriacao = cliente.DataCriacao,
+                Ativo = cliente.Ativo
             };
 
             await _context.Clientes.AddAsync(model);
-            await _context.SaveChangesAsync();
 
             typeof(Cliente).GetProperty("Id")?.SetValue(cliente, model.Id);
             return cliente;
@@ -45,17 +45,7 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
             var m = await _context.Clientes.FirstOrDefaultAsync(x => x.CPF == cpf);
             if (m is null) return null;
 
-            var cliente = (Cliente)Activator.CreateInstance(typeof(Cliente), true)!;
-            typeof(Cliente).GetProperty("Id")?.SetValue(cliente, m.Id);
-            typeof(Cliente).GetProperty("UsuarioId")?.SetValue(cliente, m.UsuarioId);
-            typeof(Cliente).GetProperty("CPF")?.SetValue(cliente, m.CPF);
-            typeof(Cliente).GetProperty("Telefone")?.SetValue(cliente, m.Telefone);
-            typeof(Cliente).GetProperty("Endereco")?.SetValue(cliente, m.Endereco);
-            typeof(Cliente).GetProperty("Cidade")?.SetValue(cliente, m.Cidade);
-            typeof(Cliente).GetProperty("Estado")?.SetValue(cliente, m.Estado);
-            typeof(Cliente).GetProperty("CEP")?.SetValue(cliente, m.CEP);
-
-            return cliente;
+            return MapToEntity(m);
         }
 
         public async Task<Cliente?> GetByIdAsync(int id)
@@ -63,17 +53,7 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
             var m = await _context.Clientes.FirstOrDefaultAsync(x => x.Id == id);
             if (m is null) return null;
 
-            var cliente = (Cliente)Activator.CreateInstance(typeof(Cliente), true)!;
-            typeof(Cliente).GetProperty("Id")?.SetValue(cliente, m.Id);
-            typeof(Cliente).GetProperty("UsuarioId")?.SetValue(cliente, m.UsuarioId);
-            typeof(Cliente).GetProperty("CPF")?.SetValue(cliente, m.CPF);
-            typeof(Cliente).GetProperty("Telefone")?.SetValue(cliente, m.Telefone);
-            typeof(Cliente).GetProperty("Endereco")?.SetValue(cliente, m.Endereco);
-            typeof(Cliente).GetProperty("Cidade")?.SetValue(cliente, m.Cidade);
-            typeof(Cliente).GetProperty("Estado")?.SetValue(cliente, m.Estado);
-            typeof(Cliente).GetProperty("CEP")?.SetValue(cliente, m.CEP);
-
-            return cliente;
+            return MapToEntity(m);
         }
 
         public async Task<IEnumerable<Cliente>> GetAllAsync()
@@ -83,16 +63,7 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
 
             foreach (var m in models)
             {
-                var cliente = (Cliente)Activator.CreateInstance(typeof(Cliente), true)!;
-                typeof(Cliente).GetProperty("Id")?.SetValue(cliente, m.Id);
-                typeof(Cliente).GetProperty("UsuarioId")?.SetValue(cliente, m.UsuarioId);
-                typeof(Cliente).GetProperty("CPF")?.SetValue(cliente, m.CPF);
-                typeof(Cliente).GetProperty("Telefone")?.SetValue(cliente, m.Telefone);
-                typeof(Cliente).GetProperty("Endereco")?.SetValue(cliente, m.Endereco);
-                typeof(Cliente).GetProperty("Cidade")?.SetValue(cliente, m.Cidade);
-                typeof(Cliente).GetProperty("Estado")?.SetValue(cliente, m.Estado);
-                typeof(Cliente).GetProperty("CEP")?.SetValue(cliente, m.CEP);
-                list.Add(cliente);
+                list.Add(MapToEntity(m));
             }
 
             return list;
@@ -108,8 +79,35 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
             existing.Cidade = cliente.Cidade;
             existing.Estado = cliente.Estado;
             existing.CEP = cliente.CEP;
+            existing.Ativo = cliente.Ativo;
+            existing.DataAtualizacao = cliente.DataAtualizacao;
 
-            await _context.SaveChangesAsync();
+            return cliente;
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var model = await _context.Clientes.FirstOrDefaultAsync(x => x.Id == id);
+            if (model is null) return false;
+
+            _context.Clientes.Remove(model);
+            return true;
+        }
+
+        private Cliente MapToEntity(ClienteModel m)
+        {
+            var cliente = (Cliente)Activator.CreateInstance(typeof(Cliente), true)!;
+            typeof(Cliente).GetProperty("Id")?.SetValue(cliente, m.Id);
+            typeof(Cliente).GetProperty("UsuarioId")?.SetValue(cliente, m.UsuarioId);
+            typeof(Cliente).GetProperty("CPF")?.SetValue(cliente, m.CPF);
+            typeof(Cliente).GetProperty("Telefone")?.SetValue(cliente, m.Telefone);
+            typeof(Cliente).GetProperty("Endereco")?.SetValue(cliente, m.Endereco);
+            typeof(Cliente).GetProperty("Cidade")?.SetValue(cliente, m.Cidade);
+            typeof(Cliente).GetProperty("Estado")?.SetValue(cliente, m.Estado);
+            typeof(Cliente).GetProperty("CEP")?.SetValue(cliente, m.CEP);
+            typeof(Cliente).GetProperty("DataCriacao")?.SetValue(cliente, m.DataCriacao);
+            typeof(Cliente).GetProperty("DataAtualizacao")?.SetValue(cliente, m.DataAtualizacao);
+            typeof(Cliente).GetProperty("Ativo")?.SetValue(cliente, m.Ativo);
             return cliente;
         }
     }

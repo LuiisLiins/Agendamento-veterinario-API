@@ -9,4 +9,4 @@ namespace AgendamentoVeterinario.Cadastro.API.Domain.Repositories
         Task<IEnumerable<Pet>> GetByClienteIdAsync(int clienteId);
         Task<bool> ExisteConsultaFuturaParaOPetAsync(int petId);
     }
-}
+}   

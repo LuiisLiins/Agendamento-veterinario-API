@@ -7,10 +7,12 @@ namespace AgendamentoVeterinario.Cadastro.API.Application.UseCases
     public class ExcluirPetUseCase
     {
         private readonly IPetRepository _petRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ExcluirPetUseCase(IPetRepository petRepository)
+        public ExcluirPetUseCase(IPetRepository petRepository, IUnitOfWork unitOfWork)
         {
             _petRepository = petRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task ExecutarAsync(int petId)
@@ -18,17 +20,28 @@ namespace AgendamentoVeterinario.Cadastro.API.Application.UseCases
             var pet = await _petRepository.GetByIdAsync(petId);
             if (pet == null)
             {
-                throw new InvalidOperationException("Pet nao encontrado.");
+                throw new InvalidOperationException("Pet não encontrado.");
             }
 
             bool possuiConsultasAtivas = await _petRepository.ExisteConsultaFuturaParaOPetAsync(petId);
 
             if (!pet.ValidarSePodeSerExcluido(possuiConsultasAtivas))
             {
-                throw new InvalidOperationException("Nao e permitido excluir um pet com consultas futuras agendadas.");
+                throw new InvalidOperationException("Não é permitido excluir um pet com consultas futuras agendadas.");
             }
 
-            await _petRepository.DeleteAsync(petId);
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                await _petRepository.DeleteAsync(petId);
+                await _unitOfWork.CommitAsync();
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
         }
     }
 }

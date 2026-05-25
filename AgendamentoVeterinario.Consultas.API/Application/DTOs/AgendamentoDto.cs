@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AgendamentoVeterinario.Consultas.API.Application.DTO
+namespace AgendamentoVeterinario.Consultas.API.Application.DTOs
 {
     public class AgendamentoDto
     {

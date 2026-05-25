@@ -12,21 +12,8 @@ namespace DataApplication.Models
         public string Email { get; set; } = null!;
         public string Telefone { get; set; } = null!;
         public string Especialidade { get; set; } = null!;
-        public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+        public DateTime DataCriacao { get; set; }
         public DateTime? DataAtualizacao { get; set; }
-        public bool Ativo { get; set; } = true;
-
-        public VeterinarioModel() { }
-
-        public VeterinarioModel(string nome, string crmv, string email, string telefone, string especialidade)
-        {
-            Nome = nome;
-            CRMV = crmv;
-            Email = email;
-            Telefone = telefone;
-            Especialidade = especialidade;
-            DataCriacao = DateTime.UtcNow;
-            Ativo = true;
-        }
+        public bool Ativo { get; set; }
     }
 }

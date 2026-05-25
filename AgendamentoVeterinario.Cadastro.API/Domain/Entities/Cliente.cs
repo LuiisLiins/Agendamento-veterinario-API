@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
-namespace DataApplication.Models
+namespace AgendamentoVeterinario.Cadastro.API.Domain.Entities
 {
-    public class Clientes
+    public class Cliente
     {
         public int Id { get; private set; }
         public string CPF { get; private set; } = null!;
@@ -13,14 +11,14 @@ namespace DataApplication.Models
         public string Cidade { get; private set; } = null!;
         public string Estado { get; private set; } = null!;
         public string CEP { get; private set; } = null!;
-        public DateTime DataCriacao { get; private set; } = DateTime.UtcNow;
+        public DateTime DataCriacao { get; private set; }
         public DateTime? DataAtualizacao { get; private set; }
-        public bool Ativo { get; private set; } = true;
+        public bool Ativo { get; private set; }
         public Guid UsuarioId { get; private set; }
 
-        public Clientes() { }
+        public Cliente() { }
 
-        public Clientes(string cpf, string telefone, string endereco, string cidade, string estado, string cep, Guid usuarioId)
+        public Cliente(string cpf, string telefone, string endereco, string cidade, string estado, string cep, Guid usuarioId)
         {
             if (string.IsNullOrWhiteSpace(cpf)) throw new ArgumentException("CPF é obrigatório.");
 

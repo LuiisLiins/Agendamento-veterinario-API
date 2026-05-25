@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace AgendamentoVeterinario.Cadastro.API.Domain.Entities
 {
@@ -15,9 +14,9 @@ namespace AgendamentoVeterinario.Cadastro.API.Domain.Entities
         public string Cor { get; private set; } = null!;
         public string Sexo { get; private set; } = null!;
         public string NumeroMicrochip { get; private set; } = null!;
-        public DateTime DataCriacao { get; private set; } = DateTime.UtcNow;
+        public DateTime DataCriacao { get; private set; }
         public DateTime? DataAtualizacao { get; private set; }
-        public bool Ativo { get; private set; } = true;
+        public bool Ativo { get; private set; }
 
         public Pet() { }
 
@@ -66,4 +65,4 @@ namespace AgendamentoVeterinario.Cadastro.API.Domain.Entities
             DataAtualizacao = DateTime.UtcNow;
         }
     }
-}
+}   

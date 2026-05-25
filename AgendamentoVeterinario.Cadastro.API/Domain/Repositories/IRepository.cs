@@ -9,5 +9,6 @@ namespace AgendamentoVeterinario.Cadastro.API.Domain.Repositories
         Task<TEntity?> GetByIdAsync(TId id);
         Task<IEnumerable<TEntity>> GetAllAsync();
         Task<TEntity?> UpdateAsync(TId id, TEntity entity);
+        Task<bool> DeleteAsync(TId id);
     }
 }

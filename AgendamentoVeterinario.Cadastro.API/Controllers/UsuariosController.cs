@@ -3,7 +3,6 @@ using System;
 using System.Threading.Tasks;
 using AgendamentoVeterinario.Cadastro.API.Domain.Entities;
 using AgendamentoVeterinario.Cadastro.API.Domain.Repositories;
-using AgendamentoVeterinario.Cadastro.API.Application.UseCases;
 using AgendamentoVeterinario.Cadastro.API.Application.DTOs;
 
 namespace AgendamentoVeterinario.Cadastro.API.Controllers
@@ -13,18 +12,12 @@ namespace AgendamentoVeterinario.Cadastro.API.Controllers
     public class UsuariosController : ControllerBase
     {
         private readonly IUsuarioRepository _repository;
-        private readonly RegistrarUsuarioUseCase _registrarUsuarioUseCase;
-        private readonly DesativarUsuarioUseCase _desativarUsuarioUseCase;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public UsuariosController(
-            IUsuarioRepository repository,
-            RegistrarUsuarioUseCase registrarUsuarioUseCase,
-            DesativarUsuarioUseCase desativarUsuarioUseCase
-            )
+        public UsuariosController(IUsuarioRepository repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
-            _registrarUsuarioUseCase = registrarUsuarioUseCase;
-            _desativarUsuarioUseCase = desativarUsuarioUseCase;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -38,53 +31,24 @@ namespace AgendamentoVeterinario.Cadastro.API.Controllers
             return Ok(item);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] UsuarioDto dto)
-        {
-            try
-            {
-                var created = await _registrarUsuarioUseCase.ExecutarAsync
-                (
-                    dto.Nome,
-                    dto.Email,
-                    dto.SenhaHash
-                );
-
-                return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { mensagem = ex.Message });
-            }
-        }
-
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UsuarioDto dto)
         {
-            var usuario = new Usuario
-            (
-                dto.Nome,
-                dto.Email,
-                dto.SenhaHash
-            );
+            var usuario = new Usuario(dto.Nome, dto.Email, dto.Senha);
 
-            var updated = await _repository.UpdateAsync(id, usuario);
-            if (updated is null) return NotFound();
-            return Ok(updated);
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
-        {
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
-                await _desativarUsuarioUseCase.ExecutarAsync(id);
-                return NoContent();
+                var updated = await _repository.UpdateAsync(id, usuario);
+                if (updated is null) return NotFound();
+
+                await _unitOfWork.CommitAsync();
+                return Ok(updated);
             }
-            catch (Exception ex)
+            catch
             {
-                if (ex.Message == "Usuário não encontrado.") return NotFound();
-                return BadRequest(new { mensagem = ex.Message });
+                await _unitOfWork.RollbackAsync();
+                throw;
             }
         }
     }

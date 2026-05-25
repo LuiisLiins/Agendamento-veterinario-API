@@ -15,12 +15,14 @@ namespace AgendamentoVeterinario.Cadastro.API.Controllers
         private readonly IPetRepository _repository;
         private readonly CadastrarPetUseCase _cadastrarPetUseCase;
         private readonly ExcluirPetUseCase _excluirPetUseCase;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public PetsController(IPetRepository repository, CadastrarPetUseCase cadastrarPetUseCase, ExcluirPetUseCase excluirPetUseCase)
+        public PetsController(IPetRepository repository, CadastrarPetUseCase cadastrarPetUseCase, ExcluirPetUseCase excluirPetUseCase, IUnitOfWork unitOfWork)
         {
             _repository = repository;
             _cadastrarPetUseCase = cadastrarPetUseCase;
             _excluirPetUseCase = excluirPetUseCase;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -41,15 +43,8 @@ namespace AgendamentoVeterinario.Cadastro.API.Controllers
         public async Task<IActionResult> Create([FromBody] PetDto dto)
         {
             var created = await _cadastrarPetUseCase.ExecutarAsync(
-                dto.ClienteId, 
-                dto.Nome, 
-                dto.Especie, 
-                dto.Raca, 
-                dto.Peso,
-                dto.DataNascimento, 
-                dto.Cor, 
-                dto.Sexo, 
-                dto.NumeroMicrochip
+                dto.ClienteId, dto.Nome, dto.Especie, dto.Raca, dto.Peso,
+                dto.DataNascimento, dto.Cor, dto.Sexo, dto.NumeroMicrochip
             );
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
@@ -57,21 +52,22 @@ namespace AgendamentoVeterinario.Cadastro.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] PetDto dto)
         {
-            var pet = new Pet(
-                dto.ClienteId,
-                dto.Nome,
-                dto.Especie,
-                dto.Raca,
-                dto.Peso,
-                dto.DataNascimento,
-                dto.Cor,
-                dto.Sexo,
-                dto.NumeroMicrochip
-            );
+            var pet = new Pet(dto.ClienteId, dto.Nome, dto.Especie, dto.Raca, dto.Peso, dto.DataNascimento, dto.Cor, dto.Sexo, dto.NumeroMicrochip);
 
-            var updated = await _repository.UpdateAsync(id, pet);
-            if (updated is null) return NotFound();
-            return Ok(updated);
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var updated = await _repository.UpdateAsync(id, pet);
+                if (updated is null) return NotFound();
+
+                await _unitOfWork.CommitAsync();
+                return Ok(updated);
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
         }
 
         [HttpDelete("{id}")]

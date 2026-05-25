@@ -21,20 +21,22 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
 
         public async Task<Pet> AddAsync(Pet pet)
         {
-            var model = new PetModel(
-                pet.ClienteId,
-                pet.Nome,
-                pet.Especie,
-                pet.Raca,
-                pet.Peso,
-                pet.DataNascimento,
-                pet.Cor,
-                pet.Sexo,
-                pet.NumeroMicrochip
-            );
+            var model = new PetModel
+            {
+                ClienteId = pet.ClienteId,
+                Nome = pet.Nome,
+                Especie = pet.Especie,
+                Raca = pet.Raca,
+                Peso = pet.Peso,
+                DataNascimento = pet.DataNascimento,
+                Cor = pet.Cor,
+                Sexo = pet.Sexo,
+                NumeroMicrochip = pet.NumeroMicrochip,
+                DataCriacao = pet.DataCriacao,
+                Ativo = pet.Ativo
+            };
 
             await _context.Pets.AddAsync(model);
-            await _context.SaveChangesAsync();
 
             typeof(Pet).GetProperty("Id")?.SetValue(pet, model.Id);
             return pet;
@@ -47,7 +49,6 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
                 return false;
 
             _context.Pets.Remove(model);
-            await _context.SaveChangesAsync();
             return true;
         }
 
@@ -58,10 +59,7 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
 
             foreach (var m in models)
             {
-                var pet = new Pet(m.ClienteId, m.Nome, m.Especie, m.Raca, m.Peso, m.DataNascimento, m.Cor, m.Sexo, m.NumeroMicrochip);
-                typeof(Pet).GetProperty("Id")?.SetValue(pet, m.Id);
-                typeof(Pet).GetProperty("Ativo")?.SetValue(pet, m.Ativo);
-                list.Add(pet);
+                list.Add(MapToEntity(m));
             }
 
             return list;
@@ -73,11 +71,7 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
             if (m is null)
                 return null;
 
-            var pet = new Pet(m.ClienteId, m.Nome, m.Especie, m.Raca, m.Peso, m.DataNascimento, m.Cor, m.Sexo, m.NumeroMicrochip);
-            typeof(Pet).GetProperty("Id")?.SetValue(pet, m.Id);
-            typeof(Pet).GetProperty("Ativo")?.SetValue(pet, m.Ativo);
-
-            return pet;
+            return MapToEntity(m);
         }
 
         public async Task<IEnumerable<Pet>> GetByClienteIdAsync(int clienteId)
@@ -87,10 +81,7 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
 
             foreach (var m in models)
             {
-                var pet = new Pet(m.ClienteId, m.Nome, m.Especie, m.Raca, m.Peso, m.DataNascimento, m.Cor, m.Sexo, m.NumeroMicrochip);
-                typeof(Pet).GetProperty("Id")?.SetValue(pet, m.Id);
-                typeof(Pet).GetProperty("Ativo")?.SetValue(pet, m.Ativo);
-                list.Add(pet);
+                list.Add(MapToEntity(m));
             }
 
             return list;
@@ -116,9 +107,27 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
             existing.Sexo = pet.Sexo;
             existing.NumeroMicrochip = pet.NumeroMicrochip;
             existing.Ativo = pet.Ativo;
-            existing.DataAtualizacao = DateTime.UtcNow;
+            existing.DataAtualizacao = pet.DataAtualizacao;
 
-            await _context.SaveChangesAsync();
+            return pet;
+        }
+
+        private Pet MapToEntity(PetModel m)
+        {
+            var pet = (Pet)Activator.CreateInstance(typeof(Pet), true)!;
+            typeof(Pet).GetProperty("Id")?.SetValue(pet, m.Id);
+            typeof(Pet).GetProperty("ClienteId")?.SetValue(pet, m.ClienteId);
+            typeof(Pet).GetProperty("Nome")?.SetValue(pet, m.Nome);
+            typeof(Pet).GetProperty("Especie")?.SetValue(pet, m.Especie);
+            typeof(Pet).GetProperty("Raca")?.SetValue(pet, m.Raca);
+            typeof(Pet).GetProperty("Peso")?.SetValue(pet, m.Peso);
+            typeof(Pet).GetProperty("DataNascimento")?.SetValue(pet, m.DataNascimento);
+            typeof(Pet).GetProperty("Cor")?.SetValue(pet, m.Cor);
+            typeof(Pet).GetProperty("Sexo")?.SetValue(pet, m.Sexo);
+            typeof(Pet).GetProperty("NumeroMicrochip")?.SetValue(pet, m.NumeroMicrochip);
+            typeof(Pet).GetProperty("DataCriacao")?.SetValue(pet, m.DataCriacao);
+            typeof(Pet).GetProperty("DataAtualizacao")?.SetValue(pet, m.DataAtualizacao);
+            typeof(Pet).GetProperty("Ativo")?.SetValue(pet, m.Ativo);
             return pet;
         }
     }

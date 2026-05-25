@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace AgendamentoVeterinario.Consultas.API.Domain.Entities
 {
@@ -11,17 +10,15 @@ namespace AgendamentoVeterinario.Consultas.API.Domain.Entities
         public string Email { get; private set; } = null!;
         public string Telefone { get; private set; } = null!;
         public string Especialidade { get; private set; } = null!;
-        public DateTime DataCriacao { get; private set; } = DateTime.UtcNow;
+        public DateTime DataCriacao { get; private set; }
         public DateTime? DataAtualizacao { get; private set; }
-        public bool Ativo { get; private set; } = true;
+        public bool Ativo { get; private set; }
 
-        public virtual ICollection<Agendamento> Agendamentos { get; private set; } = new List<Agendamento>();
-
-        protected Veterinario() { }
+        public Veterinario() { }
 
         public Veterinario(string nome, string crmv, string email, string telefone, string especialidade)
         {
-            if (string.IsNullOrWhiteSpace(crmv)) throw new ArgumentException("O CRMV do veterinario e obrigatorio.");
+            if (string.IsNullOrWhiteSpace(crmv)) throw new ArgumentException("O CRMV do veterinário é obrigatório.");
 
             Nome = nome;
             CRMV = crmv;

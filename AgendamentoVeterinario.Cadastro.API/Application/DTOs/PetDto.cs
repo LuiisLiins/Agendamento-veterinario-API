@@ -1,4 +1,6 @@
-﻿namespace AgendamentoVeterinario.Cadastro.API.Application.DTOs
+﻿using System;
+
+namespace AgendamentoVeterinario.Cadastro.API.Application.DTOs
 {
     public class PetDto
     {

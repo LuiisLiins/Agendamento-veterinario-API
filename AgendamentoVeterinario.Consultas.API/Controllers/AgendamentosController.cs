@@ -1,4 +1,4 @@
-using AgendamentoVeterinario.Consultas.API.Application.DTO;
+using AgendamentoVeterinario.Consultas.API.Application.DTOs;
 using AgendamentoVeterinario.Consultas.API.Application.UseCases;
 using AgendamentoVeterinario.Consultas.API.Domain.Entities;
 using AgendamentoVeterinario.Consultas.API.Domain.Repositories;
@@ -14,11 +14,13 @@ namespace AgendamentoVeterinario.Consultas.API.Controllers
     {
         private readonly IAgendamentoRepository _repository;
         private readonly AgendarConsultaUseCase _agendarConsultaUseCase;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AgendamentosController(IAgendamentoRepository repository, AgendarConsultaUseCase agendarConsultaUseCase)
+        public AgendamentosController(IAgendamentoRepository repository, AgendarConsultaUseCase agendarConsultaUseCase, IUnitOfWork unitOfWork)
         {
             _repository = repository;
             _agendarConsultaUseCase = agendarConsultaUseCase;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -43,44 +45,57 @@ namespace AgendamentoVeterinario.Consultas.API.Controllers
         {
             try
             {
-               
                 var novoAgendamento = await _agendarConsultaUseCase.ExecutarAsync(
-                    dto.ClienteId,
-                    dto.PetId,
-                    dto.VeterinarioId,
-                    dto.DataHoraAgendamento,
-                    dto.TipoServico,
-                    dto.Valor,
-                    dto.Descricao,
-                    dto.Observacoes
+                    dto.ClienteId, dto.PetId, dto.VeterinarioId, dto.DataHoraAgendamento,
+                    dto.TipoServico, dto.Valor, dto.Descricao, dto.Observacoes
                 );
 
                 return CreatedAtAction(nameof(GetById), new { id = novoAgendamento.Id }, novoAgendamento);
             }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { mensagem = ex.Message });
-            }
-            catch (InvalidOperationException ex)
+            catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException)
             {
                 return BadRequest(new { mensagem = ex.Message });
             }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Agendamento agendamento)
+        public async Task<IActionResult> Update(int id, [FromBody] AgendamentoDto dto)
         {
-            var updated = await _repository.UpdateAsync(id, agendamento);
-            if (updated is null) return NotFound();
-            return Ok(updated);
+            var agendamento = new Agendamento(dto.ClienteId, dto.PetId, dto.VeterinarioId, dto.DataHoraAgendamento, dto.TipoServico, dto.Valor, dto.Descricao, dto.Observacoes);
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var updated = await _repository.UpdateAsync(id, agendamento);
+                if (updated is null) return NotFound();
+
+                await _unitOfWork.CommitAsync();
+                return Ok(updated);
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var removed = await _repository.DeleteAsync(id);
-            if (!removed) return NotFound();
-            return NoContent();
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var removed = await _repository.DeleteAsync(id);
+                if (!removed) return NotFound();
+
+                await _unitOfWork.CommitAsync();
+                return NoContent();
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
         }
     }
 }

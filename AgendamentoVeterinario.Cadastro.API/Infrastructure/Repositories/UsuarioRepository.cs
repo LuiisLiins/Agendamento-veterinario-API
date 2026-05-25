@@ -32,7 +32,7 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
             };
 
             await _context.Usuarios.AddAsync(model);
-            await _context.SaveChangesAsync();
+
             return usuario;
         }
 
@@ -43,14 +43,7 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
 
             foreach (var m in models)
             {
-                var usuario = (Usuario)Activator.CreateInstance(typeof(Usuario), true)!;
-                typeof(Usuario).GetProperty("Id")?.SetValue(usuario, m.Id);
-                typeof(Usuario).GetProperty("Nome")?.SetValue(usuario, m.Nome);
-                typeof(Usuario).GetProperty("Email")?.SetValue(usuario, m.Email);
-                typeof(Usuario).GetProperty("SenhaHash")?.SetValue(usuario, m.SenhaHash);
-                typeof(Usuario).GetProperty("Ativo")?.SetValue(usuario, m.Ativo);
-                typeof(Usuario).GetProperty("DataCriacao")?.SetValue(usuario, m.DataCriacao);
-                list.Add(usuario);
+                list.Add(MapToEntity(m));
             }
 
             return list;
@@ -62,15 +55,7 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
             if (m is null)
                 return null;
 
-            var usuario = (Usuario)Activator.CreateInstance(typeof(Usuario), true)!;
-            typeof(Usuario).GetProperty("Id")?.SetValue(usuario, m.Id);
-            typeof(Usuario).GetProperty("Nome")?.SetValue(usuario, m.Nome);
-            typeof(Usuario).GetProperty("Email")?.SetValue(usuario, m.Email);
-            typeof(Usuario).GetProperty("SenhaHash")?.SetValue(usuario, m.SenhaHash);
-            typeof(Usuario).GetProperty("Ativo")?.SetValue(usuario, m.Ativo);
-            typeof(Usuario).GetProperty("DataCriacao")?.SetValue(usuario, m.DataCriacao);
-
-            return usuario;
+            return MapToEntity(m);
         }
 
         public async Task<Usuario?> GetByIdAsync(Guid id)
@@ -79,15 +64,7 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
             if (m is null)
                 return null;
 
-            var usuario = (Usuario)Activator.CreateInstance(typeof(Usuario), true)!;
-            typeof(Usuario).GetProperty("Id")?.SetValue(usuario, m.Id);
-            typeof(Usuario).GetProperty("Nome")?.SetValue(usuario, m.Nome);
-            typeof(Usuario).GetProperty("Email")?.SetValue(usuario, m.Email);
-            typeof(Usuario).GetProperty("SenhaHash")?.SetValue(usuario, m.SenhaHash);
-            typeof(Usuario).GetProperty("Ativo")?.SetValue(usuario, m.Ativo);
-            typeof(Usuario).GetProperty("DataCriacao")?.SetValue(usuario, m.DataCriacao);
-
-            return usuario;
+            return MapToEntity(m);
         }
 
         public async Task<Usuario?> UpdateAsync(Guid id, Usuario usuario)
@@ -101,7 +78,27 @@ namespace AgendamentoVeterinario.Cadastro.API.Infrastructure.Repositories
             existing.SenhaHash = usuario.SenhaHash;
             existing.Ativo = usuario.Ativo;
 
-            await _context.SaveChangesAsync();
+            return usuario;
+        }
+
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            var model = await _context.Usuarios.FirstOrDefaultAsync(x => x.Id == id);
+            if (model is null) return false;
+
+            _context.Usuarios.Remove(model);
+            return true;
+        }
+
+        private Usuario MapToEntity(UsuarioModel m)
+        {
+            var usuario = (Usuario)Activator.CreateInstance(typeof(Usuario), true)!;
+            typeof(Usuario).GetProperty("Id")?.SetValue(usuario, m.Id);
+            typeof(Usuario).GetProperty("Nome")?.SetValue(usuario, m.Nome);
+            typeof(Usuario).GetProperty("Email")?.SetValue(usuario, m.Email);
+            typeof(Usuario).GetProperty("SenhaHash")?.SetValue(usuario, m.SenhaHash);
+            typeof(Usuario).GetProperty("Ativo")?.SetValue(usuario, m.Ativo);
+            typeof(Usuario).GetProperty("DataCriacao")?.SetValue(usuario, m.DataCriacao);
             return usuario;
         }
     }

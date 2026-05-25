@@ -16,10 +16,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IPetRepository, PetRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IPetRepository, PetRepository>();
 
-builder.Services.AddScoped<RegistrarUsuarioUseCase>();
+builder.Services.AddScoped<RegistrarClienteUsuarioUseCase>();
+builder.Services.AddScoped<DesativarClienteUsuarioUseCase>();
 builder.Services.AddScoped<CadastrarPetUseCase>();
 builder.Services.AddScoped<ExcluirPetUseCase>();
 

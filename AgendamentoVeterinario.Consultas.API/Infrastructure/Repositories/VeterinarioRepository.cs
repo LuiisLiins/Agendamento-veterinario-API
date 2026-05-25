@@ -21,16 +21,18 @@ namespace AgendamentoVeterinario.Consultas.API.Infrastructure.Repositories
 
         public async Task<Veterinario> AddAsync(Veterinario veterinario)
         {
-            var model = new VeterinarioModel(
-                veterinario.Nome,
-                veterinario.CRMV,
-                veterinario.Email,
-                veterinario.Telefone,
-                veterinario.Especialidade
-            );
+            var model = new VeterinarioModel
+            {
+                Nome = veterinario.Nome,
+                CRMV = veterinario.CRMV,
+                Email = veterinario.Email,
+                Telefone = veterinario.Telefone,
+                Especialidade = veterinario.Especialidade,
+                DataCriacao = veterinario.DataCriacao,
+                Ativo = veterinario.Ativo
+            };
 
             await _context.Veterinarios.AddAsync(model);
-            await _context.SaveChangesAsync();
 
             typeof(Veterinario).GetProperty("Id")?.SetValue(veterinario, model.Id);
             return veterinario;
@@ -43,7 +45,6 @@ namespace AgendamentoVeterinario.Consultas.API.Infrastructure.Repositories
                 return false;
 
             _context.Veterinarios.Remove(model);
-            await _context.SaveChangesAsync();
             return true;
         }
 
@@ -54,10 +55,7 @@ namespace AgendamentoVeterinario.Consultas.API.Infrastructure.Repositories
 
             foreach (var m in models)
             {
-                var veterinario = new Veterinario(m.Nome, m.CRMV, m.Email, m.Telefone, m.Especialidade);
-                typeof(Veterinario).GetProperty("Id")?.SetValue(veterinario, m.Id);
-                typeof(Veterinario).GetProperty("Ativo")?.SetValue(veterinario, m.Ativo);
-                list.Add(veterinario);
+                list.Add(MapToEntity(m));
             }
 
             return list;
@@ -69,11 +67,7 @@ namespace AgendamentoVeterinario.Consultas.API.Infrastructure.Repositories
             if (m is null)
                 return null;
 
-            var veterinario = new Veterinario(m.Nome, m.CRMV, m.Email, m.Telefone, m.Especialidade);
-            typeof(Veterinario).GetProperty("Id")?.SetValue(veterinario, m.Id);
-            typeof(Veterinario).GetProperty("Ativo")?.SetValue(veterinario, m.Ativo);
-
-            return veterinario;
+            return MapToEntity(m);
         }
 
         public async Task<Veterinario?> UpdateAsync(int id, Veterinario veterinario)
@@ -88,9 +82,23 @@ namespace AgendamentoVeterinario.Consultas.API.Infrastructure.Repositories
             existing.Telefone = veterinario.Telefone;
             existing.Especialidade = veterinario.Especialidade;
             existing.Ativo = veterinario.Ativo;
-            typeof(VeterinarioModel).GetProperty("DataAtualizacao")?.SetValue(existing, DateTime.UtcNow);
+            existing.DataAtualizacao = veterinario.DataAtualizacao;
 
-            await _context.SaveChangesAsync();
+            return veterinario;
+        }
+
+        private Veterinario MapToEntity(VeterinarioModel m)
+        {
+            var veterinario = (Veterinario)Activator.CreateInstance(typeof(Veterinario), true)!;
+            typeof(Veterinario).GetProperty("Id")?.SetValue(veterinario, m.Id);
+            typeof(Veterinario).GetProperty("Nome")?.SetValue(veterinario, m.Nome);
+            typeof(Veterinario).GetProperty("CRMV")?.SetValue(veterinario, m.CRMV);
+            typeof(Veterinario).GetProperty("Email")?.SetValue(veterinario, m.Email);
+            typeof(Veterinario).GetProperty("Telefone")?.SetValue(veterinario, m.Telefone);
+            typeof(Veterinario).GetProperty("Especialidade")?.SetValue(veterinario, m.Especialidade);
+            typeof(Veterinario).GetProperty("DataCriacao")?.SetValue(veterinario, m.DataCriacao);
+            typeof(Veterinario).GetProperty("DataAtualizacao")?.SetValue(veterinario, m.DataAtualizacao);
+            typeof(Veterinario).GetProperty("Ativo")?.SetValue(veterinario, m.Ativo);
             return veterinario;
         }
     }

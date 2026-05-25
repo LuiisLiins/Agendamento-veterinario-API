@@ -1,4 +1,4 @@
-using AgendamentoVeterinario.Consultas.API.Domain.Repositories;
+﻿using AgendamentoVeterinario.Consultas.API.Domain.Repositories;
 using AgendamentoVeterinario.Consultas.API.Infrastructure.Repositories;
 using AgendamentoVeterinario.Consultas.API.Application.UseCases;
 using DataApplication.Context;
@@ -18,28 +18,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// 👇 Repositórios e UnitOfWork
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); // AQUI ESTÁ A CORREÇÃO!
 builder.Services.AddScoped<IAgendamentoRepository, AgendamentoRepository>();
 builder.Services.AddScoped<IVeterinarioRepository, VeterinarioRepository>();
+
+// 👇 Casos de Uso
 builder.Services.AddScoped<AgendarConsultaUseCase>();
 
 var app = builder.Build();
 
 startup.Configure(app, builder.Environment);
-
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        var context = services.GetRequiredService<AgendamentoVeterinarioContext>();
-        InitializeContext.Initialize(context);
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
-    }
-}
 
 if (app.Environment.IsDevelopment())
 {

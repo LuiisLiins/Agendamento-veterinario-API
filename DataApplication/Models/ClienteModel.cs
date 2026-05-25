@@ -13,26 +13,9 @@ namespace DataApplication.Models
         public string Cidade { get; set; } = null!;
         public string Estado { get; set; } = null!;
         public string CEP { get; set; } = null!;
-        public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+        public DateTime DataCriacao { get; set; }
         public DateTime? DataAtualizacao { get; set; }
-        public bool Ativo { get; set; } = true;
+        public bool Ativo { get; set; }
         public Guid UsuarioId { get; set; }
-
-        public ClienteModel() { }
-
-        public ClienteModel(string cpf, string telefone, string endereco, string cidade, string estado, string cep, Guid usuarioId)
-        {
-            if (string.IsNullOrWhiteSpace(cpf)) throw new ArgumentException("CPF é obrigatório.");
-
-            CPF = cpf;
-            Telefone = telefone;
-            Endereco = endereco;
-            Cidade = cidade;
-            Estado = estado;
-            CEP = cep;
-            UsuarioId = usuarioId;
-            DataCriacao = DateTime.UtcNow;
-            Ativo = true;
-        }
     }
 }

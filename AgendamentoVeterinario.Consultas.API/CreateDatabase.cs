@@ -1,13 +1,16 @@
-﻿using DataApplication.Context;
+﻿using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using DataApplication.Context;
 
 namespace AgendamentoVeterinario.Consultas.API
 {
     public class CreateDatabase
     {
-        public IConfiguration configRoot
-        {
-            get;
-        }
+        public IConfiguration configRoot { get; }
+
         public CreateDatabase(IConfiguration configuration)
         {
             configRoot = configuration;
@@ -15,10 +18,16 @@ namespace AgendamentoVeterinario.Consultas.API
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            using var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope();
+            using var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>()!.CreateScope();
             var context = serviceScope.ServiceProvider.GetRequiredService<AgendamentoVeterinarioContext>();
 
-            context.Database.EnsureCreated();
+            try
+            {
+                context.Database.EnsureCreated();
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }
