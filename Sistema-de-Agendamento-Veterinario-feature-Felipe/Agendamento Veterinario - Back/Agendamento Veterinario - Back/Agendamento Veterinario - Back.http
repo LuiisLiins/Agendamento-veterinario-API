@@ -1,0 +1,6 @@
+@Agendamento_Veterinario___Back_HostAddress = http://localhost:5284
+
+GET {{Agendamento_Veterinario___Back_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

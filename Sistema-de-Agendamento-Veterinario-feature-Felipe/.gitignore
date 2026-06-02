@@ -1,0 +1,21 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Banco/cache
+*.db
+*.db-shm
+*.db-wal
+
+# Build
+bin/
+obj/
+
+# Node
+node_modules/
+
+# Logs
+*.log
